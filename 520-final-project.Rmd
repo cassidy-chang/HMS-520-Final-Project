@@ -1,0 +1,41 @@
+---
+title: "520-final-project"
+author: "Cassidy Chang, Yaz Ozten, and Sinclair Carr"
+output: pdf_document
+
+---
+
+# HMS 520 Final Project
+
+## Format
+For this project, we choose to analyze a dataset and use data wrangling and modeling techniques in R. 
+
+## Overall goal
+The overall goal of the project is to determine associations between some of the variables in an HIV dataset that focuses on mortality and the use of ART.
+
+## Timeline
+In the first week we want to clean the data and prepare it for and begin analysis by performing data cleaning and wrangling techniques using R. In the second week we want to visualize it and prepare the presentation.
+
+## Plan
+### Part I: Data Wrangling
+  - change names to be more readable and intuitive
+  - CD4 (upper and lower) - multiply by 10
+  - sum CD4 variables into one to get average CD4 count
+  - separate age (lower limit and upper limit)
+  - Length of study
+  
+### Part II: Data Analysis
+  - descriptive analysis
+  - attempt k-means/agglomerative/spectral clustering and see if predictive of time since ART 
+  - running different regression models with different sets of covariates
+  - comparing models with select goodness of fit tests
+
+### Part III: Visualization
+  - plot regression outputs 
+  - plot goodness of fit
+  - visualization with PCA and TSNE 
+
+```{r}
+
+```
+
