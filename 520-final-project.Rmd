@@ -1,41 +1,36 @@
 ---
-title: "520-final-project"
+title: "HMS 520 Final Project"
 author: "Cassidy Chang, Yaz Ozten, and Sinclair Carr"
 output: pdf_document
 
 ---
 
-# HMS 520 Final Project
-
 ## Format
-For this project, we choose to analyze a dataset and use data wrangling and modeling techniques in R. 
+For this project, we choose to analyze a dataset and use data wrangling, modeling, and visualization techniques in R. 
 
 ## Overall goal
-The overall goal of the project is to determine associations between some of the variables in an HIV dataset that focuses on mortality and the use of ART.
+The overall goal of the project is to determine population-level associations between HIV-related variables and mortality and ART use using regression and cluster analyses.
 
 ## Timeline
-In the first week we want to clean the data and prepare it for and begin analysis by performing data cleaning and wrangling techniques using R. In the second week we want to visualize it and prepare the presentation.
+In the first week (11/29 - 12/5) we will clean the data and create new variables and begin the first part of the data analysis. The data cleaning and wrangling will be based primarily on techniques we learned in the course. In the second week (12/6 - 12/12) we will finalize the data analysis, visualize the results and prepare the presentation. Throughout the entire process, we will merge our code and work process into a shared R Markdown file and document it in detail for full traceability.
 
 ## Plan
+
 ### Part I: Data Wrangling
-  - change names to be more readable and intuitive
+  - Change names to be more readable and intuitive
   - CD4 (upper and lower) - multiply by 10
-  - sum CD4 variables into one to get average CD4 count
-  - separate age (lower limit and upper limit)
-  - Length of study
+  - Sum CD4 variables into one to get average CD4 count
+  - Separate age variable (lower limit and upper limit)
+  - Create a variable indicating the length of study
   
 ### Part II: Data Analysis
-  - descriptive analysis
-  - attempt k-means/agglomerative/spectral clustering and see if predictive of time since ART 
-  - running different regression models with different sets of covariates
-  - comparing models with select goodness of fit tests
+  - Descriptive analysis
+  - Attempt k-means/agglomerative/spectral clustering and see if predictive of time since ART 
+  - Running different regression models with different sets of covariates and mortality and use of ART as outcomes
+  - Comparing models with select goodness of fit tests
 
 ### Part III: Visualization
-  - plot regression outputs 
-  - plot goodness of fit
-  - visualization with PCA and TSNE 
-
-```{r}
-
-```
+  - Plot regression outputs 
+  - Plot goodness of fit tests
+  - Visualization with PCA and TSNE 
 
