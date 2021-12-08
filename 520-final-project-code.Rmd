@@ -1,0 +1,40 @@
+---
+title: "HMS 520 Final Project"
+author: "Cassidy Chang, Yaz Ozten, and Sinclair Carr"
+output: pdf_document
+
+---
+
+### Part I: Data Wrangling
+  - Change names to be more readable and intuitive
+  - CD4 (upper and lower) - multiply by 10
+  - Sum CD4 variables into one to get average CD4 count
+  - Separate age variable (lower limit and upper limit)
+  - Create a variable indicating the length of study
+
+```{r}
+
+```
+
+  
+### Part II: Data Analysis
+  - Descriptive analysis
+  - Attempt k-means/agglomerative/spectral clustering and see if predictive of time since ART 
+  - Running different regression models with different sets of covariates and mortality and use of ART as outcomes
+  - Comparing models with select goodness of fit tests
+
+```{r}
+
+```
+
+
+### Part III: Visualization
+  - Plot regression outputs 
+  - Plot goodness of fit tests
+  - Visualization with PCA and TSNE 
+
+```{r}
+
+```
+
+
