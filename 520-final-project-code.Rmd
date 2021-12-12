@@ -26,10 +26,12 @@ library("ggplot2")
 ```{r}
 
 data <- setDT(read_excel("on-art_mort.xlsx"))
-setnames(data, c("nid", "super", "meas_value", "meas_stdev", "iso3", "time_point", "age"), 
-         c("study_id", "gbd_superregion", "p_mortality", "sd_p_mortality", "country_code", "time_since_art", "age_group"))
+setnames(data, c("nid", "super", "meas_value", "meas_stdev", "iso3", "time_point", 
+                 "age", "CD4_lower", "CD4_upper"), c("study_id", "gbd_superregion", 
+                "p_mortality", "sd_p_mortality", "country_code", "time_since_art", 
+                "age_group", "cd4_lower", "cd4_upper"))
 
-data[, `:=` ("cd4_lower" = CD4_lower * 10, "cd4_upper" = CD4_upper * 10)]
+data[, `:=` ("cd4_lower" = cd4_lower * 10, "cd4_upper" = cd4_upper * 10)]
 data[, study_length := time_upper - time_lower]
 data[, cd4_mid := (cd4_upper + cd4_lower)/2]
 data[, sex := as.factor(ifelse(sex == 1, "male", "female"))]
@@ -41,6 +43,7 @@ sum(is.na(data$p_mortality)) # 20
 sum(is.na(data$sd_p_mortality)) # 20
 sum(is.na(data$site)) # 360
 
+View(data)
 
 ```
 
@@ -76,6 +79,9 @@ model1 <- p_mortality ~ sex + age + gbd_superregion
   - Visualization with PCA and TSNE 
 
 ```{r}
+
+
+
 
 ```
 
