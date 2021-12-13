@@ -58,16 +58,15 @@ View(data)
 summary(data, digits = 2)
 by(data, data$gbd_superregion, summary)
 by(data, data$age_group, summary)
-
 table(data$sex, data$time_since_art)
-prop.table(table(data$sex, data$time_since_art))
+prop.table(table(data$sex, data$time_since_art)) # Summaries of general descriptive statistics based on GBD super region and age group, as well as proportions of participants in the data set based on time since ART.
 
 boxplot(data$p_mortality~data$age_group) # Age and probability of mortality may be slightly correlated
-boxplot(data$p_mortality~data$time_since_art) # A lot of the data seems to be clustered in the time-since-art range of 6 months. Probability of mortality seems to decrease as time-since-art increases (from 6 to 12 to 24 months)
+boxplot(data$p_mortality~data$time_since_art) # Much of the data seems to be clustered in the range of six months since ART. Probability of mortality seems to decrease as time since ART increases (from six to 12 to 24 months)
 
-model2 <- lm(formula = p_mortality ~ sex + age_group + time_since_art, data = data) # The above seems to be more or less true as we can see by running the linear model of probability of mortality against sex, age group and time since art
-anova(model2)
-
+model2 <- lm(formula = p_mortality ~ sex + age_group + time_since_art, data = data)
+library("rigr")
+regress("odds", formula = p_mortality ~ sex + age_group + time_since_art, data = data) # The above seems to be more or less true as we can see by running the linear model of probability of mortality against sex, age group and time since ART
 
 model1 <- p_mortality ~ sex + age + gbd_superregion
 ```
