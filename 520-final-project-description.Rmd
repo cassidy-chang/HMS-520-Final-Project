@@ -1,0 +1,9 @@
+---
+title: "520-final-project-description"
+author: "Cassidy Chang, Yaz Ozten, and Sinclair Carr"
+date: "12/13/2021"
+output: pdf_document
+---
+ # This is the project description for our hMS 520 Final Project
+ 
+ For this project, we looked at a dataset from IHME that looked at the probability of mortality, conditional on a number of different covariates. For example, sex, GBD superregion, CD4 counts and time since study participants started the anti-retroviral treatment process.
