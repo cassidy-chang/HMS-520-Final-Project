@@ -7,3 +7,11 @@ output: pdf_document
  # This is the project description for our hMS 520 Final Project
  
  For this project, we looked at a dataset from IHME that looked at the probability of mortality, conditional on a number of different covariates. For example, sex, GBD superregion, CD4 counts and time since study participants started the anti-retroviral treatment process.
+
+## Data Wrangling
+To start, we wanted to clean the dataset by doing some data wrangling. We started by improving the names to make them more readable and understandable. Then, we created new columns of data from the CD4 count data. In the data set, the CD4 counts were divided by 10 in order for IHME to use them in the CODEm model, so in each of the new columns (CD4 upper, CD4 lower and CD4 mid) we multiplied them by 10 to get them back to their original values. We then created a new column indicating the study length, by subtracting the time when the study ended from the time when it started. Then, we changed the sex variable from being coded as 1 for male and 2 for female to just being "male" or "female". 
+
+We could see from the data that there were a number of missing values, particularly in the study site variable. We identified how many there were. 
+
+## Summary Statistics
+Next, we implemented summary statistics across some variables of interest and performed regression analysis. 
