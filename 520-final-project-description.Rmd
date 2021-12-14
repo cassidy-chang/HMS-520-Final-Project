@@ -15,3 +15,17 @@ We could see from the data that there were a number of missing values, particula
 
 ## Summary Statistics
 Next, we implemented summary statistics across some variables of interest and performed regression analysis. 
+
+## Clustering (unsupervised machine learning) for prediction of time_since_art
+- Used numeric variables to predict time_since_art categories (6 months, 12 months, 24 months) 
+- Used four types of clustering: K-means, K-medoids, hierarchical agglomerative, model-based 
+- To calculate accuracy, created an accuracy function - solves a linear assignment problem with the Hungarian algorithm to find most fair orientation for accuracy computation
+- Since results vary, ran each clustering algorithm 10 times and calculated an average
+- Found that model-based clustering yielded highest accuracy, hierarchical agglomerative yielded lowest accuracy
+
+## Visualisation 
+- Used PCA (principal component analysis) and tSNE (t-distributed stochastic neighbor embedding) 
+- Different but commonly used dimensionality reduction / visualisation methods 
+- PCA a linear method, tSNE a nonlinear more complex method 
+- Visualisations show that data evenly distributed, and difficult to construct correct time_since_art categories using clustering
+- Conclusion: future study could try to use other ML methods, eg: neural networks, to achieve higher accuracy 
