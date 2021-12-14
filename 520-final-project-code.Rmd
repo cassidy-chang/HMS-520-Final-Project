@@ -5,6 +5,11 @@ output: pdf_document
 
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
 ```{r}
 rm(list = ls())
 library("data.table")
@@ -19,18 +24,21 @@ library("Rtsne")
 library("factoextra")
 library("cluster")
 library("clue")
-
+library("rigr")
+library("metafor") # for meta-regression
+library("car") # for logit transformation
+library("lme4") # for random effects model
+library("sjstats") # for R square in lmer
+library("stargazer") # displaying results in tables
+library("hrbrthemes")
+library("jtools") # to plot regression results
+library("sjPlot") # to plot regression results
 ```
 
 
 
 
-### Part I: Data Wrangling
-  - Change names to be more readable and intuitive
-  - CD4 (upper and lower) - multiply by 10
-  - Sum CD4 variables into one to get average CD4 count
-  - Separate age variable (lower limit and upper limit)
-  - Create a variable indicating the length of study
+### Part Ia: Data Wrangling
 
 ```{r}
 
@@ -57,11 +65,7 @@ View(data)
 ```
 
   
-### Part IIa: Summary statistics 
-  - Descriptive analysis
-  - Attempt k-means/agglomerative/spectral clustering and see if predictive of time since ART 
-  - Running different regression models with different sets of covariates and mortality and use of ART as outcomes
-  - Comparing models with select goodness of fit tests
+### Part Ib: Summary statistics 
 
 ```{r}
 summary(data, digits = 2)
@@ -73,14 +77,12 @@ prop.table(table(data$sex, data$time_since_art)) # Summaries of general descript
 boxplot(data$p_mortality~data$age_group) # Age and probability of mortality may be slightly correlated
 boxplot(data$p_mortality~data$time_since_art) # Much of the data seems to be clustered in the range of six months since ART. Probability of mortality seems to decrease as time since ART increases (from six to 12 to 24 months)
 
-model2 <- lm(formula = p_mortality ~ sex + age_group + time_since_art, data = data)
-library("rigr")
 regress("odds", formula = p_mortality ~ sex + age_group + time_since_art, data = data) # The above seems to be more or less true as we can see by running the linear model of probability of mortality against sex, age group and time since ART
 
 model1 <- p_mortality ~ sex + age + gbd_superregion
 ```
 
-### Part IIb: Unsupervised learning - clustering 
+### Part IIa: Unsupervised learning - clustering 
 ```{r}
 # Using numeric data, predict time_since_art with clustering (unsupervised learning)
 
@@ -161,10 +163,7 @@ cat("Mean k-means predictive accuracy is:", k_mean_accuracy,
 ```
 
 
-
-
-### Part IIIa: Visualization with PCA and tSNE
-
+### Part IIb: Visualization with PCA and tSNE
 
 ```{r}
 
@@ -184,4 +183,150 @@ plot(data_tsne$Y, col = data$time_since_art)
 
 ```
 
+## Part IIIa: Regression Analyses
 
+```{r}
+# subset data for regression analyses
+
+regr_data <- data
+factor.list <- c("sex", "age_group", "gbd_superregion", "study_id", "time_since_art")
+
+regr_data[, (factor.list) := lapply(.SD, as.factor), .SDcols = factor.list]
+
+#data[, get(factor.list)] <- sapply(data[, get(factor.list)], as.factor)
+
+regr_data[, var_p_mortality := sd_p_mortality^2]
+regr_data[, logit_mortality := logit(p_mortality)]
+
+
+regr_data[is.na(regr_data) | regr_data == "Inf" | regr_data == "-Inf"] <- NA
+regr_data <- regr_data[complete.cases(regr_data)]
+
+# weighted least squares logit linear regression
+m1.1  <- lm(logit_mortality ~ time_since_art, data = regr_data, weights = 1/(sd_p_mortality^2))
+
+stargazer(m1.1, title = "Results of unadjusted regression model", 
+          dep.var.caption = "Logit(Probability of Mortality)", type = "text")
+
+m1.2  <- lm(logit_mortality ~ time_since_art + sex + age_group + study_length, data = regr_data, weights = 1/(sd_p_mortality^2)) # how to treat ordinal variable
+
+stargazer(m1.2, title = "Results of adjusted regression model", 
+          dep.var.caption = "Logit(Probability of Mortality)", type = "text")
+
+
+
+
+m1.3  <- lmer(logit_mortality ~ time_since_art + sex + age_group + study_length + (1 | study_id), data = regr_data, weights = 1/(sd_p_mortality^2)) # add random intercepts for study id
+
+stargazer(m1.3, title = "Results of regression model with random intercepts", 
+          dep.var.caption = "Logit(Probability of Mortality)", type = "text")
+
+performance::r2(m1.3)
+
+
+pe.m1.1 <- coef(m1.1)  # parameters
+ll.m1.1 <- logLik(m1.1)  # likelihood at maximum
+
+pe.m1.2 <- coef(m1.2)  # parameters
+ll.m1.2 <- logLik(m1.2)  # likelihood at maximum
+```
+
+# Aikaike Information Criterion
+
+$$
+AIC\ (M) = D(M) + 2 \times |M|
+$$
+
+```{r}
+k.m1.1 <- length(pe.m1.1)
+k.m1.2 <- length(pe.m1.2)
+
+aic.m1.1 <- 2*k.m1.1 - 2*ll.m1.1
+aic.m1.2 <- 2*k.m1.2 - 2*ll.m1.2
+
+aic.test <- aic.m1.2 - aic.m1.1 ; aic.test
+``` 
+
+# Bayesian Information Criterion
+
+$$
+BIC\ (M) = D(M) + \log(n) \times |M|
+$$
+
+```{r}
+bic.m1.1 <- log(nrow(regr_data))*k.m1.1 - 2*ll.m1.1
+bic.m1.2 <- log(nrow(regr_data))*k.m1.2 - 2*ll.m1.2
+
+bic.test <- bic.m1.2 - bic.m1.1 ; bic.test
+```
+
+
+## Meta regression
+
+```{r}
+# meta regression models
+m2.1 <- rma.mv(logit(p_mortality), var_p_mortality, data = regr_data, method = "ML", 
+             mods = ~ time_since_art + sex + age_group + study_length)
+summary(m1)
+
+m2.2 <- rma.mv(logit(p_mortality), var_p_mortality, data = regr_data, method = "ML", 
+             mods = ~ time_since_art + sex + age_group + study_length, random = ~ 1 | study_id)
+summary(m2)
+
+```
+
+### Part IIIb: Visualization
+
+```{r}
+# Plot probability of dying per GBD Superregion
+
+outcome1 <- ggplot(data = regr_data, aes(x = p_mortality, group = gbd_superregion, fill = gbd_superregion)) + geom_density(adjust = 1.5, alpha = 0.4) + theme_minimal()
+outcome1 + labs(x = "Probability of HIV mortality", y = "Density") + theme(legend.position = c(0.9, 0.8), legend.direction = "vertical") + scale_fill_discrete(name = "GBD Superregion", breaks = c("high", "ssa",  "other"), labels = c("High income", "Sub-Saharan Africa", "Other")) + theme(plot.title = element_text(hjust = 0.5))
+
+# Plot regression results
+
+result_plot1 <- plot_summs(m1.1, m1.2, coefs = c("12 months since ART initiation" = "time_since_art12", "24 months since ART initiation" = "time_since_art24", "Females" = "sex", "25 to 35 years" = "age_group25_35", "35 to 45 years" = "age_group35_45", "45 to 55 years" = "age_group45_55", "55 to 100 years" = "age_group55_100", "Length of study" = "study_length"),
+           scale = TRUE, robust = TRUE)
+result_plot1
+
+result_plot2 <- plot_models(m1.1, m1.2, axis.labels = c("12 months since ART initiation", "24 months since ART initiation", "Females", "25 to 35 years", "35 to 45 years", "45 to 55 years","55 to 100 years", "Length of study"), wrap.labels = 20)
+result_plot2
+#  Time since ART and probability of dying
+
+
+GeomSplitViolin <- ggproto("GeomSplitViolin", GeomViolin, 
+                           draw_group = function(self, regr_data, ..., draw_quantiles = NULL) {
+  data <- transform(data, xminv = x - violinwidth * (x - xmin), xmaxv = x + violinwidth * (xmax - x))
+  grp <- data[1, "group"]
+  newdata <- plyr::arrange(transform(data, x = if (grp %% 2 == 1) xminv else xmaxv), if (grp %% 2 == 1) y else -y)
+  newdata <- rbind(newdata[1, ], newdata, newdata[nrow(newdata), ], newdata[1, ])
+  newdata[c(1, nrow(newdata) - 1, nrow(newdata)), "x"] <- round(newdata[1, "x"])
+
+  if (length(draw_quantiles) > 0 & !scales::zero_range(range(data$y))) {
+    stopifnot(all(draw_quantiles >= 0), all(draw_quantiles <=
+      1))
+    quantiles <- ggplot2:::create_quantile_segment_frame(data, draw_quantiles)
+    aesthetics <- data[rep(1, nrow(quantiles)), setdiff(names(data), c("x", "y")), drop = FALSE]
+    aesthetics$alpha <- rep(1, nrow(quantiles))
+    both <- cbind(quantiles, aesthetics)
+    quantile_grob <- GeomPath$draw_panel(both, ...)
+    ggplot2:::ggname("geom_split_violin", grid::grobTree(GeomPolygon$draw_panel(newdata, ...), quantile_grob))
+  }
+  else {
+    ggplot2:::ggname("geom_split_violin", GeomPolygon$draw_panel(newdata, ...))
+  }
+})
+
+geom_split_violin <- function(mapping = NULL, data = NULL, stat = "ydensity", position = "identity", ..., 
+                              draw_quantiles = NULL, trim = TRUE, scale = "area", na.rm = FALSE, 
+                              show.legend = NA, inherit.aes = TRUE) {
+  layer(data = data, mapping = mapping, stat = stat, geom = GeomSplitViolin, 
+        position = position, show.legend = show.legend, inherit.aes = inherit.aes, 
+        params = list(trim = trim, scale = scale, draw_quantiles = draw_quantiles, na.rm = na.rm, ...))
+}
+
+plot1 <- ggplot(regr_data, aes(x=time_since_art, y = p_mortality, fill = sex)) + geom_split_violin(trim = F) + theme_minimal()
+
+plot1 + labs(y = "Probability of HIV mortality", x = "Time since initiation of ART", fill = "Sex") + theme(legend.position = c(0.9, 0.9), legend.direction = "vertical") + scale_fill_discrete(name="Sex",breaks=c("1", "2"),labels = c("Male", "Female"))
+
+```
