@@ -23,7 +23,7 @@ Next, we implemented summary statistics across some variables of interest and pe
 - Since results vary, ran each clustering algorithm 10 times and calculated an average
 - Found that model-based clustering yielded highest accuracy, hierarchical agglomerative yielded lowest accuracy
 
-## Visualisation 
+## Visualisation with PCA and tSNE 
 - Used PCA (principal component analysis) and tSNE (t-distributed stochastic neighbor embedding) 
 - Different but commonly used dimensionality reduction / visualisation methods 
 - PCA a linear method, tSNE a nonlinear more complex method 
